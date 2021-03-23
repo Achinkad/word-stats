@@ -9,8 +9,27 @@ n=$WORD_STATS_TOP
 case $mode in
     c | C)
         if [[ -f "$file" ]]; then
-            [[ -z $WORD_STATS_TOP ]] && n=10
-            sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| tr 'A-Z' 'a-z' | sort | uniq -c | sort -nr | nl | head -n $n > result---$file.txt
+            #Remover a extensão do ficheiro caso o mesmo seja .txt
+            if [[ $file == *.txt ]]; then
+                filename="result---$file"
+            else
+                filename="result---$file.txt"
+            fi
+            echo -e "[INFO] Processing '${file}'"
+            case $mode in
+                c)
+                    echo -e "STOP WORDS will be filtered out"
+                    ;;
+                C)
+                    echo -e "STOP WORDS will be counted"
+                    ;;
+            esac
+            echo -e "COUNT MODE"
+            sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| tr 'A-Z' 'a-z' | sort | uniq -c | sort -nr | nl > $filename
+            cat $filename | more
+            echo -e "RESULTS: '$filename'"
+            ls -la | grep $filename
+            echo -e "$(wc -l "$filename" | tr " " '\n' | head -n 1) distinct words"
         else
             echo "[ERROR] can't find file '$file'"
             exit 1
@@ -18,7 +37,7 @@ case $mode in
         ;;
 
     p | P)
-        #APRENSETAR GRÁFICO
+        #APRESENTAR GRÁFICO
         ;;
 
     t | T)
@@ -27,7 +46,6 @@ case $mode in
             case $mode in
                 t)
                     echo -e "STOP WORDS will be filtered out"
-                    #FILTRAR A CONTAGEM DE STOP WORDS
                     case $iso in
                         pt)
                             echo -e "StopWords file 'pt': 'StopWords/pt.stop_words.txt' (205 words)"
