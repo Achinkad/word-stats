@@ -22,6 +22,7 @@ case $mode in
                         #Associa à variável stopwords o caminho do ficheiro que contêm as stopwords consoante o iso escolhido
                         if [[ -z $iso || $iso = "en" ]]; then
                             stopwords="stopwords/en.stop_words.txt"
+                            iso='en'
                         elif [[ $iso = "pt" ]]; then
                             stopwords="stopwords/pt.stop_words.txt"
                         else
@@ -80,6 +81,7 @@ case $mode in
                         #Associa à variável stopwords o caminho do ficheiro que contêm as stopwords consoante o iso escolhido
                         if [[ -z $iso || $iso = "en" ]]; then
                             stopwords="stopwords/en.stop_words.txt"
+                            iso='en'
                         elif [[ $iso = "pt" ]]; then
                             stopwords="stopwords/pt.stop_words.txt"
                         else
