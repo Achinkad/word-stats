@@ -19,13 +19,37 @@ case $mode in
             case $mode in
                 c)
                     echo -e "STOP WORDS will be filtered out"
+                        #Associa à variável stopwords o caminho do ficheiro que contêm as stopwords consoante o iso escolhido
+                        if [[ -z $iso || $iso = "en" ]]; then
+                            stopwords="stopwords/en.stop_words.txt"
+                        elif [[ $iso = "pt" ]]; then
+                            stopwords="stopwords/pt.stop_words.txt"
+                        else
+                            #Se o iso for diferente de pt ou en, por defeito é utilizado o iso en
+                            echo -e "ISO3166 '$iso' not supported. Using default ISO3166 format 'en'"
+                            stopwords="stopwords/en.stop_words.txt"
+                            iso='en'
+                        fi
                     ;;
                 C)
                     echo -e "STOP WORDS will be counted"
                     ;;
             esac
-            echo -e "COUNT MODE"
-            sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| tr 'A-Z' 'a-z' | sort | uniq -c | sort -nr | nl > $filename
+
+            #Verifica se existem stopwords no ficheiro, excluindo as mesmas, e guarda o novo ficheiro na diretoría tmp
+            sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| tr 'A-Z' 'a-z' > tmp/$file.tmp
+            grep -vxf $stopwords tmp/$file.tmp > tmp/new_$file.tmp
+            echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)\nCOUNT MODE"
+
+            #Verifica se existe o ficheiro new_$file.tmp, ou seja, o ficheiro que contêm a lista sem as stopwords
+            if [[ -f "tmp/new_$file.tmp" ]]; then
+                sort tmp/new_$file.tmp | uniq -c | sort -nr | nl > $filename
+                #Após a listagem da orrência de palavras os ficheiros são tmp são eliminados
+                rm tmp/new_$file.tmp && rm tmp/$file.tmp
+            else
+                sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| tr 'A-Z' 'a-z' | sort | uniq -c | sort -nr | nl > $filename
+            fi
+
             cat $filename | more
             echo -e "RESULTS: '$filename'"
             ls -la | grep $filename
