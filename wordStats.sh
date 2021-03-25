@@ -116,6 +116,8 @@ case $mode in
             # Creats Graph
             cp template.gnuplot bar.gnuplot
             sed -i "s/filename/$filename/g" bar.gnuplot
+            filecut=`echo $file | cut -d'.' -f1,2`
+            sed -i "s/varfile/$filecut/g" bar.gnuplot
             gnuplot < bar.gnuplot
             display result/$filename.png
             rm bar.gnuplot
