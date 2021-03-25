@@ -7,8 +7,7 @@ n=$WORD_STATS_TOP
 [[ $# -eq 0 ]] && echo "[ERROR] insufficient parameters" && exit 1
 
 # Converts PDF to TXT
-if [ `echo "$file" | cut -d'.' -f2` == pdf ]; then
-#if [[ $file == *.pdf ]]; then
+if [[ $file == *.pdf ]]; then
   pdftotext $file $file.txt
   file=$file.txt
 fi
@@ -114,11 +113,15 @@ case $mode in
             cat $filename
             echo -e "-------------------------------------"
                         
-            # Creates the graphic png
-            printf "set terminal png\nset output \"$filename.png\"\nset boxwidth 0.5\nset style fill solid\nplot \"$filename\" using 1:2:xtic(3) with boxes" > bar.gnuplot
+            # Creats Graph
+            cp template.gnuplot bar.gnuplot
+            sed -i "s/filename/$filename/g" bar.gnuplot
             gnuplot < bar.gnuplot
             display $filename.png
-            printf "<img src=\"$filename.png\">" > $filename.html
+
+            # Creats HTML
+            cp template.html $filename.html
+            sed -i "s/filename/$filename/g" $filename.html
 
     else
         echo "[ERROR] can't find file '$file'"
