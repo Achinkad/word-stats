@@ -9,10 +9,10 @@ n=$WORD_STATS_TOP
 #Check if the file exists and his extension. If it is PDF it converts to TXT
 if [[ -f "$file" ]]; then
     if [[ $file == *.pdf ]]; then
-        echo -e "'$file': PDF file"; echo -e "[INFO] Processing '${file}'"
+        echo -e "'$file': PDF file"; echo -e "[INFO] Processing '$file'"
         pdftotext $file $file.txt && file=$file.txt && filename="result---$file"
     elif [[ $file == *.txt ]]; then
-        echo -e "'$file': TXT file"; echo -e "[INFO] Processing '${file}'"
+        echo -e "'$file': TXT file"; echo -e "[INFO] Processing '$file'"
         filename="result---$file"
     fi
 elif [[ -z $file ]]; then
@@ -73,7 +73,7 @@ case $mode in
                 sed -e 's/[^[:alpha:]]/ /g' $file | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' > tmp/$file.tmp && grep -vxf $stopwords tmp/$file.tmp > tmp/new_$file.tmp
                 ;;
             P)
-                echo -e "STOP WORDS will be counted"
+                echo -e "STOP WORDS will be counted"; stopwords=false
                 ;;
         esac
 
@@ -93,14 +93,15 @@ case $mode in
         ls -la result | grep $filename
         echo -e "-------------------------------------\n# TOP $n elements" && cat result/$filename && echo -e "-------------------------------------"
 
-        #Creates the graph
-        cp template.gnuplot bar.gnuplot
-        sed -i "s/filename/$filename/g" bar.gnuplot
-        filecut=`echo $file | cut -d'.' -f1,2`
-        sed -i "s/varfile/$filecut/g" bar.gnuplot
-        gnuplot < bar.gnuplot
-        display result/$filename.png
-        rm bar.gnuplot
+        #Creates all the info needed to display the graph
+        if [[ $stopwords == false ]]; then
+            info=$(echo "(with stop words)")
+        else
+            info=$(echo "('$iso') stop words removed")
+        fi
+        filecut=$(echo $file | cut -d'.' -f1,2)
+        date=$(date +%Y.%m.%d-%Hh%M:%S)
+        cp template.gnuplot bar.gnuplot && sed -i "s/filename/$filename/g; s/file/$filecut/g; s/date/$date/g; s/info/$info/g" bar.gnuplot && gnuplot < bar.gnuplot && display result/$filename.png && rm bar.gnuplot
 
         #Creates the html
         cp template.html result/$filename.html && sed -i "s/filename/$filename/g" result/$filename.html
