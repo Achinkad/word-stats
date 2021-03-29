@@ -101,7 +101,9 @@ case $mode in
         fi
         filecut=$(echo $file | cut -d'.' -f1,2)
         date=$(date +%Y.%m.%d-%Hh%M:%S)
-        cp template.gnuplot bar.gnuplot && sed -i "s/filename/$filename/g; s/file/$filecut/g; s/date/$date/g; s/info/$info/g" bar.gnuplot && gnuplot < bar.gnuplot && display result/$filename.png && rm bar.gnuplot
+        cp template.gnuplot bar.gnuplot && sed -i "s/filename/$filename/g; s/file/$filecut/g; s/date/$date/g; s/info/$info/g" bar.gnuplot
+        gnuplot < bar.gnuplot && rm bar.gnuplot
+        display result/$filename.png
 
         #Creates the html
         cp template.html result/$filename.html && sed -i "s/filename/$filename/g" result/$filename.html
