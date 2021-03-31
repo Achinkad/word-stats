@@ -45,37 +45,20 @@ case $mode in
     c | C)
         case $mode in
             c)
-                #Check if theres any stopwords in the file and creates a tmp file with a list of words without the them
+                #Check if theres any stopwords in the file
                 echo -e "STOP WORDS will be filtered out"; echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)"
-                sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' > "tmp/$file.tmp" && grep -vxf $stopwords "tmp/$file.tmp" > "tmp/new_$file.tmp"
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | grep -vxf $stopwords | sort | uniq -c | sort -nr | nl > "result/$filename"
                 ;;
             C)
                 echo -e "STOP WORDS will be counted"
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | sort | uniq -c | sort -nr | nl > "result/$filename"
                 ;;
         esac
-
-        #Check if exists the file new_$file, which is the one with the list of words without the stopwords
-        if [[ -f "tmp/new_$file.tmp" ]]; then
-            sort "tmp/new_$file.tmp" | uniq -c | sort -nr | nl > "result/$filename" && rm "tmp/new_$file.tmp" && rm "tmp/$file.tmp"
-        else
-            sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' | sort | uniq -c | sort -nr | nl > "result/$filename"
-        fi
-
         echo -e "COUNT MODE"; cat "result/$filename" && echo -e "RESULTS: '$filename'" && ls -la result | grep "$filename" && echo -e "$(wc -l "result/$filename" | tr " " '\n' | head -n 1) distinct words"
         ;;
 
     p | P)
         filename="result---$file.dat"
-        case $mode in
-            p)
-                #Check if theres any stopwords in the file and creates a tmp file with a list of words without the them
-                echo -e "STOP WORDS will be filtered out"; echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)"
-                sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' > "tmp/$file.tmp" && grep -vxf $stopwords "tmp/$file.tmp" > "tmp/new_$file.tmp"
-                ;;
-            P)
-                echo -e "STOP WORDS will be counted"; stopwords=false
-                ;;
-        esac
 
         #If the global var "WORD_STATS_TOP" isn't set, it's used the default value of 10
         if [[ -z $WORD_STATS_TOP ]]; then
@@ -84,11 +67,17 @@ case $mode in
             echo -e "WORD_STATS_TOP=$n"
         fi
 
-        if [[ -f "tmp/new_$file.tmp" ]]; then
-            sort "tmp/new_$file.tmp" | uniq -c | sort -nr | nl | head -n $n > "result/$filename" && rm "tmp/new_$file.tmp" && rm "tmp/$file.tmp"
-        else
-            sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
-        fi
+        case $mode in
+            p)
+                #Check if theres any stopwords in the file
+                echo -e "STOP WORDS will be filtered out"; echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)"
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | grep -vxf $stopwords | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
+                ;;
+            P)
+                echo -e "STOP WORDS will be counted"; stopwords=false
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
+                ;;
+        esac
 
         #Creates all the info needed to display the graph
         if [[ $stopwords == false ]]; then
@@ -96,30 +85,17 @@ case $mode in
         else
             info=$(echo "('$iso') stop words removed")
         fi
-        filecut=$(echo "$file" | cut -d'.' -f1,2)
-        date=$(date +%Y.%m.%d-%Hh%M:%S)
+
+        filecut=$(echo "$file" | cut -d'.' -f1,2) && date=$(date +%Y.%m.%d-%Hh%M:%S)
         cp template.gnuplot bar.gnuplot && sed -i "s/filename/$filename/g; s/file/$filecut/g; s/date/$date/g; s/info/$info/g" bar.gnuplot
-        gnuplot < bar.gnuplot && rm bar.gnuplot
-        display "result/$filename.png"
+        gnuplot < bar.gnuplot && rm bar.gnuplot && display "result/$filename.png"
 
         #Creates the html
         cp template.html "result/$filename.html" && sed -i "s/filename/$filename/g" "result/$filename.html"
-
         ls -la result | grep "$filename"
         ;;
 
     t | T)
-        case $mode in
-            t)
-                #Check if theres any stopwords in the file and creates a tmp file with a list of words without the them
-                echo -e "STOP WORDS will be filtered out"; echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)"
-                sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' > "tmp/$file.tmp" && grep -vxf $stopwords "tmp/$file.tmp" > "tmp/new_$file.tmp"
-                ;;
-            T)
-                echo -e "STOP WORDS will be counted"
-                ;;
-        esac
-
         #If the global var "WORD_STATS_TOP" isn't set, it's used the default value of 10
         if [[ -z $WORD_STATS_TOP ]]; then
             echo -e "Environment variable 'WORD_STATS_TOP' is empty (using default 10)"; n=10
@@ -127,11 +103,17 @@ case $mode in
             echo -e "WORD_STATS_TOP=$n"
         fi
 
-        if [[ -f "tmp/new_$file.tmp" ]]; then
-            sort "tmp/new_$file.tmp" | uniq -c | sort -nr | nl | head -n $n > "result/$filename" && rm "tmp/new_$file.tmp" && rm "tmp/$file.tmp"
-        else
-            sed -e 's/[^[:alpha:]]/ /g' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n'| sed -e 's/\(.*\)/\L\1/' | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
-        fi
+        case $mode in
+            t)
+                #Check if theres any stopwords in the file
+                echo -e "STOP WORDS will be filtered out"; echo -e "StopWords file '$iso': '$(echo "$stopwords")' ($(wc -l "$stopwords" | tr " " '\n' | head -n 1) words)"
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | grep -vxf $stopwords | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
+                ;;
+            T)
+                echo -e "STOP WORDS will be counted"
+                sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
+                ;;
+        esac
 
         ls -la result | grep "$filename"
         echo -e "-------------------------------------\n# TOP ${n} elements"; cat "result/$filename"; echo -e "-------------------------------------"
