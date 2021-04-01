@@ -24,7 +24,7 @@ else
 fi
 
 #Check if ISO is set and covert string to lowercase
-if [[ -n $iso || -z "$iso" ]]; then
+if [[ -n $iso ]]; then
     iso=$(echo $iso | tr '[:upper:]' '[:lower:]')
     case $iso in
         pt)
@@ -39,6 +39,10 @@ if [[ -n $iso || -z "$iso" ]]; then
             iso='en'
             ;;
     esac
+else
+    echo -e "ISO3166 was not selected. Using default ISO3166 format 'en'"
+    stopwords="stopwords/en.stop_words.txt"
+    iso='en'
 fi
 
 case $mode in
