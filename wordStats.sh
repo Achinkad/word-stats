@@ -24,7 +24,7 @@ else
 fi
 
 #Check if ISO is set and covert string to lowercase
-if [[ -n $iso ]]; then
+if [[ -n $iso || -z "$iso" ]]; then
     iso=$(echo $iso | tr '[:upper:]' '[:lower:]')
     case $iso in
         pt)
@@ -74,13 +74,13 @@ case $mode in
                 sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | grep -vxf $stopwords | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
                 ;;
             P)
-                echo -e "STOP WORDS will be counted"; stopwords=false
+                echo -e "STOP WORDS will be counted"; stopwordsBool=true
                 sed -e 's/[^[:alpha:]]/ /g; s/\(.*\)/\L\1/' "$file" | tr '\n' " " |  tr -s " " | tr " " '\n' | sort | uniq -c | sort -nr | nl | head -n $n > "result/$filename"
                 ;;
         esac
 
         #Creates all the info needed to display the graph
-        if [[ $stopwords == false ]]; then
+        if [[ $stopwordsBool ]]; then
             info=$(echo "(with stop words)")
         else
             info=$(echo "('$iso') stop words removed")
@@ -124,6 +124,6 @@ case $mode in
         ;;
 esac
 
-[[ $pdfconvert == true ]] && rm "$file"
+[[ $pdfconvert ]] && rm "$file"
 
 exit 0
