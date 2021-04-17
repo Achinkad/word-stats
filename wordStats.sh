@@ -68,7 +68,11 @@ case $mode in
         if [[ -z $WORD_STATS_TOP ]]; then
             echo -e "Environment variable 'WORD_STATS_TOP' is empty (using default 10)"; n=10
         else
-            echo -e "WORD_STATS_TOP=$n"
+            if [[ "$WORD_STATS_TOP" =~ ^[0-9]+$ ]]; then
+                echo -e "WORD_STATS_TOP=$n"
+            else
+                echo -e "Environment variable 'WORD_STATS_TOP' not a number (using default 10)"; n=10
+            fi
         fi
 
         case $mode in
@@ -104,7 +108,11 @@ case $mode in
         if [[ -z $WORD_STATS_TOP ]]; then
             echo -e "Environment variable 'WORD_STATS_TOP' is empty (using default 10)"; n=10
         else
-            echo -e "WORD_STATS_TOP=$n"
+            if [[ "$WORD_STATS_TOP" =~ ^[0-9]+$ ]]; then
+                echo -e "WORD_STATS_TOP=$n"
+            else
+                echo -e "Environment variable 'WORD_STATS_TOP' not a number (using default 10)"; n=10
+            fi
         fi
 
         case $mode in
